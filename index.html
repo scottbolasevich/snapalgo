@@ -26,7 +26,8 @@
     <br>
     <button class="connect">Connect</button>
     <button class="showMnemonic">Display Mnemonic</button>
-    <button class="getBalance">Display Balance</button>
+    <button class="getBalance">Get Balance</button>
+    <button class="displayBalance">Display Balance</button>
     <input type="checkbox" id="testnet"/>
     <label for="testnet">Testnet</label>
     <br>
@@ -49,12 +50,14 @@
     //const snapId = `local:${window.location.href}`;
     const connectButton = document.querySelector('button.connect')
     const sendButton = document.querySelector('button.showMnemonic')
+    const sendBalance = document.querySelector('button.displayBalance')
     const balanceButton = document.querySelector('button.getBalance')
     const transactButton = document.querySelector('button.transact')
     const getAddressButton = document.querySelector('button.getAddress')
     const checkbox = document.getElementById('testnet')
     connectButton.addEventListener('click', connect)
     sendButton.addEventListener('click', display_mnemonic)
+    sendBalance.addEventListener('click', display_balance)
     balanceButton.addEventListener('click', getBalance)
     transactButton.addEventListener('click', transact)
     getAddressButton.addEventListener('click', getAddress)
@@ -126,6 +129,22 @@
       }
     }      
       
+    async function display_balance () {
+      try {
+        const response = await window.ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: {
+            snapId: 'npm:@algorandfoundation/algorand-metamask-snap',
+            request: {
+              method: 'displayBalance',
+            },
+          },
+        });
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
     
     async function display_mnemonic () {
       try {
