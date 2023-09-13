@@ -1,0 +1,147 @@
+<!doctype html>
+<html>
+  </head>
+    <title>Hello, Snaps!</title>
+    <link rel="icon" type="image/svg" href="./images/icon.svg"/>
+  </head>
+
+  <body>
+    <h1>Algorand On Metamask Proof of Concept</h1>
+
+
+    <details>
+      <summary>Instructions</summary>
+      <ul>
+        <li>First, Uninstall metamask and install metamask Flask</li>
+        <li>then, click "Connect". Then, try out the other buttons!</li>
+        <li>you can fund your testnet account from</li>
+        <a href="https://bank.testnet.algorand.network/">https://bank.testnet.algorand.network/</a>
+      </ul>
+      
+    </details>
+        <br>
+    
+        <a href="https://bank.testnet.algorand.network/">testnet faucet</a>
+    <br/>
+    <br>
+    <button class="connect">Connect</button>
+    <button class="showMnemonic">Display Mnemonic</button>
+    <button class="getBalance">Display Balance</button>
+    <input type="checkbox" id="testnet"/>
+    <label for="testnet">Testnet</label>
+    <br>
+    
+    
+    <br>
+    <button class="getAddress">Get Address</button>
+    <p id="address"></p>
+    <br>
+    <div class="getBalance">Account Balance</div>
+    <p id="balance"></p>
+    <br>
+    <input id="SendTo" value="HZ57J3K46JIJXILONBBZOHX6BKPXEM2VVXNRFSUED6DKFD5ZD24PMJ3MVA" placeholder="reciver address"/>
+    <input id="Amount" value="100000" placeholder="amount" type="number"/>
+    <button class="transact">Transact</button>
+  </body>
+
+  <script>
+    const snapId = `npm:@algorandfoundation/algorand-metamask-snap`;
+    //const snapId = `local:${window.location.href}`;
+    const connectButton = document.querySelector('button.connect')
+    const sendButton = document.querySelector('button.showMnemonic')
+    const balanceButton = document.querySelector('button.getBalance')
+    const transactButton = document.querySelector('button.transact')
+    const getAddressButton = document.querySelector('button.getAddress')
+    const checkbox = document.getElementById('testnet')
+    connectButton.addEventListener('click', connect)
+    sendButton.addEventListener('click', display_mnemonic)
+    balanceButton.addEventListener('click', getBalance)
+    transactButton.addEventListener('click', transact)
+    getAddressButton.addEventListener('click', getAddress)
+
+    // here we get permissions to interact with and install the snap
+    async function connect () {
+      await ethereum.request({
+        method: 'wallet_requestSnaps',
+    	params: {
+      	  'npm:@algorandfoundation/algorand-metamask-snap': {},
+    	},
+      })
+      await getAddress();
+    }
+
+    async function getAddress(){
+      let address = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: {
+            snapId: 'npm:@algorandfoundation/algorand-metamask-snap',
+            request: {
+              method: 'getAddress',
+            },
+          },
+        })
+      document.getElementById('address').innerHTML = address
+    }
+
+    // here we call the snap's "hello" method
+    async function getBalance(){
+      try{
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: {
+            snapId: 'npm:@algorandfoundation/algorand-metamask-snap',
+            request: {
+              method: 'getBalance',
+            },
+          }
+        })
+        document.getElementById('balance').innerHTML = response
+      }catch(e){
+        console.error(e)
+        alert(err.message)
+      }
+    }
+    async function transact(){
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: {
+            snapId: 'npm:@algorandfoundation/algorand-metamask-snap',
+            request: {
+                method: 'transfer',
+                params: {
+                  to: document.querySelector('#SendTo').value,
+                  amount: document.querySelector('#Amount').value,
+                  testnet: checkbox.checked
+                }
+            },
+          },
+        })
+        console.log("transaction returned");
+        console.log(response);
+      } catch (err) {
+        console.trace(err)
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }      
+      
+    
+    async function display_mnemonic () {
+      try {
+        const response = await ethereum.request({
+          method: 'wallet_invokeSnap',
+          params: {
+            snapId: 'npm:@algorandfoundation/algorand-metamask-snap',
+            request: {
+              method: 'displayMnemonic'
+            },
+          },
+        })
+      } catch (err) {
+        console.error(err)
+        alert('Problem happened: ' + err.message || err)
+      }
+    }
+  </script>
+</html>
